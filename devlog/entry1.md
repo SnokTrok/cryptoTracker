@@ -51,3 +51,7 @@ I decided to 'simulate' my own secret storage using internal files for runtime a
 Originally I was hoping to use the widely used etherscan api to get this, unfortunately it is locke dbehind a heft $199/mo paywall for the pro endpoints that includes historical information see : https://etherscan.io/apis though the code for accessing this has been included for anyone curious.
 
 After some research I cam across [this reddit thread](https://www.reddit.com/r/ethereum/comments/17h8f1d/i_built_a_free_full_historical_ohlc_crypto_price/) in which `/u/112129` talks about a free to use OHLC historical endpoint they have created...
+
+
+
+[Entry 2](../devlog/entry2.md)
