@@ -87,14 +87,19 @@ def upsert_token_price_history(df_history : pd.DataFrame,token_id = None):
         session.execute(upsert_stmt)
 
 
-def get_tokens() -> Tuple[pd.DataFrame,list[Token]]:
+def get_tokens(token_id : int = None) -> Tuple[pd.DataFrame,list[Token]]:
     """
         Pull entire token table , returning both df and token objects
     """
+    if token_id is not None and not validate_token_info(token_id=token_id):
+        raise ValueError(f"token_id = {token_id} doesn not exits")
+    
     with get_pg_db().session_scope() as  session:
         qry = (
             session.query(Token)
         )
+        if(token_id!=None):
+            qry = qry.filter(Token.id==token_id)
         type_map = {
             'id' : 'Int64',
             'name' : 'string',

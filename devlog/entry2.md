@@ -153,7 +153,7 @@ From this I can confidently construct my api calls with the correct params, as w
 
 After calling the OHLC endpoint to get my data and upserting it into the db I can query my database for the necessary data filtering on token_id for specific coins: 
 
-TODO IMAGE HERE
+![image](../devlog/img/postgres_price_history_query.jpg)
 
 
 
