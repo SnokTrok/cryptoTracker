@@ -7,8 +7,10 @@
     </head>
 <body>
    <h1> Landing page </h1>
-   {{token_html|safe}}
-
-   {% include 'figs.html' %}
+   This page will contain all o fthe information and hopfully a way of displaying an interactive devlog for this project
+   <form action="open-dashboard" method="post">
+   <button id="button-dashboard">Dashboard</button>
+   </form>
+   <div id="div-devlog"> TODO DEVLOG...</div>
 </body>  
 </html>

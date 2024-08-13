@@ -23,5 +23,5 @@ def init_pg_db(**engine_kwargs):
 def get_pg_db() -> LocalPostgresConnection:
     global _POSTGRES_DB
     if(_POSTGRES_DB is None):
-        LocalPostgresConnection()
+        init_pg_db()
     return _POSTGRES_DB
