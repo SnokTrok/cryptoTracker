@@ -1,7 +1,7 @@
 from typing import Tuple
 from datetime import datetime
 from dash import dcc, html
-
+import websocket
 import pandas as pd
 
 from cryptoTracker.flask.dash.figures.utils import generate_candlestick_price_history_graph, generate_line_price_history_graph
@@ -9,8 +9,6 @@ from .data import token_data , get_current_token_id
 
 starting_token_id = get_current_token_id()
 starting_data_filter = (datetime(2024,7,1),datetime(2024,8,1))
-
-
 
 
 def load_dt_slider( date_min  : datetime, date_max : datetime) -> dcc.RangeSlider:
@@ -24,7 +22,6 @@ def load_dt_slider( date_min  : datetime, date_max : datetime) -> dcc.RangeSlide
     start_date =starting_data_filter[0].date()
     end_date = starting_data_filter[1].date()
     # generate a series of days between min-max inclusive
-
 
     time_series = pd.date_range(date_min , date_max , freq='1d', inclusive='both')
     num_days = len(time_series)
@@ -42,7 +39,6 @@ def load_dt_slider( date_min  : datetime, date_max : datetime) -> dcc.RangeSlide
         id="rs-interval-filter",
         value=[start_val,end_val],
         marks={i:str(dt.date()) for i , dt in enumerate(time_series) if dt.month % 3 == 0 and dt.day == 1},
-        tooltip={"placement": "bottom", "always_visible": True},
         allowCross=False,
         updatemode='drag'
     )
@@ -52,7 +48,15 @@ def load_live_price_graph() -> dcc.Graph:
     """
         Creates a live graph that conencts to binance websockets for plotting live prices of coins
     """
+    # using the empty created df for containing this data
+
+
+    # here we will also subscribe to the websocket(s) from binance for price information see notebook
+
+    # as we collect binance data it would be wastefull to not store it in the db , to do this we can trickle the data into the table
+
     raise NotImplementedError()
+
 
 def load_static_price_history_graphs(df_history, token_info) -> html.Div:
     
@@ -69,11 +73,12 @@ def load_static_price_history_graphs(df_history, token_info) -> html.Div:
 
     candle_graph = dcc.Graph(figure=candle_fig, 
                              id='static-price-history-candle-graph',
-                             style={'display': 'inline-block'},
-                             hoverData={'points' : [{'price_open' : 0}]})   
-    
+                             style={'display': 'inline-block'})   
 
-    line_graph = dcc.Graph(figure=line_fig , id='static-price-history-line-graph' , style={'display': 'inline-block'})
+    line_graph = dcc.Graph(figure=line_fig, 
+                           id='static-price-history-line-graph', 
+                           style={'display': 'inline-block'})
+    
     # build graph component using starting fig...
     return html.Div(children=[candle_graph , 
                               line_graph, 
@@ -94,6 +99,12 @@ def build_graph_layout() -> html.Div:
     # for now just wrap this , but will add other fields into this div here specifically.
     return price_history_div
 
+
+def build_live_exchange_layout() -> html.Div:
+    """
+        Contains elements for live information eg from binance websockets
+    """
+    raise NotImplementedError()
 
 def load_token_dropdown() -> dcc.Dropdown:
     options = []
