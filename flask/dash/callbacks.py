@@ -8,6 +8,8 @@ from .figures.utils import (
 )
 
 
+
+
 def init_callbacks(dash_app):
 
     from .data import token_data , get_current_token_id , set_current_token_id
@@ -43,3 +45,43 @@ def init_callbacks(dash_app):
         candle_fig = generate_candlestick_price_history_graph(df_history=df_filtered,token_name=token_data[token_id]['token_name'],token_identifier='')
         line_fig = generate_line_price_history_graph(df_history=df_filtered,token_name=token_data[token_id]['token_name'],token_identifier='')
         return candle_fig , line_fig
+    
+
+# region------------- WEBSOCKET ------------------
+
+def on_binance_kline_message(message) -> pd.DataFrame:
+    """
+        for resp formatting see : https://developers.binance.com/docs/derivatives/usds-margined-futures/websocket-market-streams/Kline-Candlestick-Streams
+    """
+    data = message['data']
+    
+    # check kline closed
+    if data['k']['x'] == False:
+        return None
+    
+    df = pd.DataFrame.from_dict(data['k'],orient='records').rename({
+        't' : 'date_open',
+        'T' : 'date_close',
+        "s" : 'symbol',
+        'i' : 'interval',
+        'o' : 'price_open',
+        'c' :'price_close',
+        'h' : 'price_high',
+        'l' : 'price_low',
+        'n' : 'num_trades'
+    }).astype({
+        "symbol" : 'string',
+        'interval' : 'string',
+        'price_open' : 'Float64',
+        'price_close' :'Float64',
+        'price_high' : 'Float64',
+        'price_low' : 'Float64',
+        'num_trades' : 'Int64'
+    })
+
+    parse_epoch  = ['date_open' , 'date_close']
+
+    for col in parse_epoch:
+        df[col] = df[col].apply(lambda x : pd.to_datetime(x).replace(tzinfo=None))
+
+    return df

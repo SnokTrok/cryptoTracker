@@ -16,11 +16,8 @@ pio.renderers.default = 'iframe'
     Utils functions for generating data visualisation figures...
 """
 
-def generate_live_price_chart(df_live_price : pd.DataFrame):
-    """
-        Build our live price graph, eventually we will be using this with our prediction model for live prediction data
-    """
-    raise NotImplementedError()
+
+# region -------------------GRAPHS--------------
 
 def generate_price_history_charts(token_id : int):
     df_token , _ = get_tokens(token_id=token_id)
@@ -58,6 +55,9 @@ def generate_line_price_history_graph(df_history : pd.DataFrame ,
     df_history = df_history.sort_values('date_open',ascending=True)
     fig = px.line(df_history, x="date_open", y="price_open", title=f'{token_name} ({token_identifier})')
     return fig
+
+# endregion.
+
 
 
 
