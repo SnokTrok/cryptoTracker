@@ -42,10 +42,6 @@ resp  = requests.get(secret['endpoint'],params=params)
 resp.status_code
 ```
 
-and then writing a simple function to convert the resp to a pandas data frame gives:
-TODO add image here ...
-
-
 from here we can start storing our data, for this I have created the following 2 tables :
 
 ```sql
@@ -66,6 +62,7 @@ create table crypto.token_price_history (
 	price_low NUMERIC(10,6),
 	volume NUMERIC(15,6),
 	num_trades INTEGER,
+    periodicity VARCHAR(3) not null,
 	constraint fk_token_id foreign key (token_id) references crypto."token" (id) on update cascade on delete cascade,
 	constraint token_id_date_open_pk primary key (token_id,date_open)
 );
