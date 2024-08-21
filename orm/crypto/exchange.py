@@ -24,12 +24,20 @@ from cryptoTracker.orm.base import Base
 """
 
 
+class Token(Base):
+    __table_name__ = 'token'
+    __tableargs__ = {'schema' : 'exchange'}
 
-class TokenExchangeCandlestickHistory(Base):
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String(10), nullable=False)
+
+
+# note not using periodicity?
+class TokenExchangePriceHistory(Base):
     __table_name__ = 'token_exchange_candlestick_history'
     __tableargs__ = {'schema' : 'exchange'}
 
-    symbol = Column(String(10) , primary_key=True)
+    echange_token_id = Column(String(10), ForeignKey("exchange.token.id",onupdate='CASCADE',ondelete='CASCADE'), primary_key=True)
     date_open = Column(DateTime,primary_key=True)
     date_close = Column(DateTime,nullable=False)
     price_open = Column(Numeric,nullable=True)
@@ -37,5 +45,7 @@ class TokenExchangeCandlestickHistory(Base):
     price_high = Column(Numeric,nullable=True)
     price_low = Column(Numeric,nullable=True)
     num_trades = Column(Integer , nullable=False)
+
+
 
     
