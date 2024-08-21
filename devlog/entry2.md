@@ -152,5 +152,8 @@ After calling the OHLC endpoint to get my data and upserting it into the db I ca
 
 ![image](../devlog/img/postgres_price_history_query.jpg)
 
+# Devlog
+- [entry3](entry3.md)
+
 
 
