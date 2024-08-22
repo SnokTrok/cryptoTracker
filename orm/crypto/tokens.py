@@ -1,6 +1,4 @@
 
-import pandas as pd
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (
     Integer, BigInteger,
     String, Boolean,
