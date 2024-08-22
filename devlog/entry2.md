@@ -152,5 +152,11 @@ After calling the OHLC endpoint to get my data and upserting it into the db I ca
 
 ![image](../devlog/img/postgres_price_history_query.jpg)
 
+<<<<<<< Updated upstream
+=======
+# Devlog
+- [entry3](devlog%20entry3.md)
+
+>>>>>>> Stashed changes
 
 

@@ -58,3 +58,11 @@ After recreating my selector in dash and using its callback decorator I could no
 <img src="img/dash_setup.jpg" alt="drawing" width="400" style='inline'/>
 </div>
 
+<<<<<<< Updated upstream
+=======
+I achieved a simple implementation of this using dash's callback decorator to output to 2 figures simultaneously , adding in a range slider to filter the data by date.
+
+
+# Devlog
+- [`entry4`](devlog%20entry4.md)
+>>>>>>> Stashed changes
