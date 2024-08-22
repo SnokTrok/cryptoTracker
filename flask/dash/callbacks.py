@@ -1,18 +1,24 @@
 
 from dash.dependencies import Output , Input , State
 import pandas as pd
-from .data import token_data
 from .figures.utils import (
     generate_candlestick_price_history_graph,
-    generate_line_price_history_graph
+    generate_line_price_history_graph,
+    generate_kline_live_binance_graph
 )
-
-
 
 
 def init_callbacks(dash_app):
 
-    from .data import token_data , get_current_token_id , set_current_token_id
+    from .data import (
+        token_data,
+        exchange_data,
+        exchange_id_map,
+        get_current_token_id,
+        set_current_token_id,
+        get_current_exhange_token_id,
+        set_current_exchange_token_id
+    )
 
     @dash_app.callback(
             Output('static-price-history-candle-graph' ,'figure'),
@@ -47,41 +53,29 @@ def init_callbacks(dash_app):
         return candle_fig , line_fig
     
 
-# region------------- WEBSOCKET ------------------
 
-def on_binance_kline_message(message) -> pd.DataFrame:
-    """
-        for resp formatting see : https://developers.binance.com/docs/derivatives/usds-margined-futures/websocket-market-streams/Kline-Candlestick-Streams
-    """
-    data = message['data']
+    # region ------ INTERVAL---------------------
+
+    @dash_app.callback(
+            Output('live-binance-kline-graph','figure'),
+            Input('interval-binance-websocket-tick','n_intervals')
+    )
+    def update_kline_binance_exchange_layout(i : int):
+        """
+            Contains elements for live information eg from binance websockets,
+
+            since this data is streamed initialize as empty , run on interval tick.
+        """
+        print(exchange_id_map)
+        print(exchange_data)
+        exch = exchange_data[get_current_exhange_token_id()]
+        data = exch['data']
+        figure = generate_kline_live_binance_graph(df_data=data,title=f'{exch["name"]} live price')
+        print(f"Interval tick! {i}")
+        return figure
+
+
+# endregion. --------------------------------
     
-    # check kline closed
-    if data['k']['x'] == False:
-        return None
+
     
-    df = pd.DataFrame.from_dict(data['k'],orient='records').rename({
-        't' : 'date_open',
-        'T' : 'date_close',
-        "s" : 'symbol',
-        'i' : 'interval',
-        'o' : 'price_open',
-        'c' :'price_close',
-        'h' : 'price_high',
-        'l' : 'price_low',
-        'n' : 'num_trades'
-    }).astype({
-        "symbol" : 'string',
-        'interval' : 'string',
-        'price_open' : 'Float64',
-        'price_close' :'Float64',
-        'price_high' : 'Float64',
-        'price_low' : 'Float64',
-        'num_trades' : 'Int64'
-    })
-
-    parse_epoch  = ['date_open' , 'date_close']
-
-    for col in parse_epoch:
-        df[col] = df[col].apply(lambda x : pd.to_datetime(x).replace(tzinfo=None))
-
-    return df

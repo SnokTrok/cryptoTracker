@@ -24,18 +24,18 @@ from cryptoTracker.orm.base import Base
 """
 
 
-class Token(Base):
-    __table_name__ = 'token'
-    __tableargs__ = {'schema' : 'exchange'}
+class ExchangeToken(Base):
+    __tablename__ = 'token'
+    __table_args__ = {'schema' : 'exchange'}
 
     id = Column(Integer, primary_key=True)
-    symbol = Column(String(10), nullable=False)
+    name = Column(String(10), nullable=False)
 
 
 # note not using periodicity?
 class TokenExchangePriceHistory(Base):
-    __table_name__ = 'token_exchange_candlestick_history'
-    __tableargs__ = {'schema' : 'exchange'}
+    __tablename__ = 'token_exchange_candlestick_history'
+    __table_args__ = {'schema' : 'exchange'}
 
     echange_token_id = Column(String(10), ForeignKey("exchange.token.id",onupdate='CASCADE',ondelete='CASCADE'), primary_key=True)
     date_open = Column(DateTime,primary_key=True)

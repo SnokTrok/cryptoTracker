@@ -1,11 +1,17 @@
 from typing import Tuple
+import asyncio
 from datetime import datetime
 from dash import dcc, html
-import websocket
 import pandas as pd
 
-from cryptoTracker.flask.dash.figures.utils import generate_candlestick_price_history_graph, generate_line_price_history_graph
-from .data import token_data , get_current_token_id
+from cryptoTracker.flask.dash.figures.utils import (
+    generate_candlestick_price_history_graph,
+    generate_line_price_history_graph,
+    generate_kline_live_binance_graph,
+)
+from cryptoTracker.application.utils import empty_dataframe_like
+from cryptoTracker.flask.dash.schemas.data import binance_kline_message_schema
+from cryptoTracker.flask.dash.data import token_data , get_current_token_id , open_websocket_thread
 
 starting_token_id = get_current_token_id()
 starting_data_filter = (datetime(2024,7,1),datetime(2024,8,1))
@@ -42,20 +48,6 @@ def load_dt_slider( date_min  : datetime, date_max : datetime) -> dcc.RangeSlide
         allowCross=False,
         updatemode='drag'
     )
-
-
-def load_live_price_graph() -> dcc.Graph:
-    """
-        Creates a live graph that conencts to binance websockets for plotting live prices of coins
-    """
-    # using the empty created df for containing this data
-
-
-    # here we will also subscribe to the websocket(s) from binance for price information see notebook
-
-    # as we collect binance data it would be wastefull to not store it in the db , to do this we can trickle the data into the table
-
-    raise NotImplementedError()
 
 
 def load_static_price_history_graphs(df_history, token_info) -> html.Div:
@@ -100,12 +92,6 @@ def build_graph_layout() -> html.Div:
     return price_history_div
 
 
-def build_live_exchange_layout() -> html.Div:
-    """
-        Contains elements for live information eg from binance websockets
-    """
-    raise NotImplementedError()
-
 def load_token_dropdown() -> dcc.Dropdown:
     options = []
     for token_id , token_info in token_data.items():
@@ -127,6 +113,34 @@ def load_dashboard_layout() -> html.Div:
                                children=[
                                    load_token_dropdown(),
                                    build_graph_layout(),
+                                   dcc.Interval(id='interval-binance-websocket-tick',interval=1500), # 1.5 second tick rate
+                                   build_live_exchange_layout()
                                ]
     )
     return layout
+
+# region ---------------------------
+
+def build_live_exchange_layout() -> html.Div:
+    """
+        Contains elements for live information eg from binance websockets,
+
+        since this data is streamed initialize as empty , run on interval tick.
+    """
+
+    df_empty = empty_dataframe_like(schema=binance_kline_message_schema)
+    figure = generate_kline_live_binance_graph(df_data=df_empty,title='WBTCUSDT live price')
+    graph = dcc.Graph(
+        figure=figure,
+        id='live-binance-kline-graph',
+        style={'display' : 'inline-block'}
+    )
+    asyncio.run(open_websocket_thread())
+    return html.Div(children=[
+            graph
+        ],
+        id='div-live-binance',
+    ) # can use this tag to toggle visibility
+
+
+# endregion. --------------------------------

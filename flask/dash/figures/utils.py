@@ -56,8 +56,21 @@ def generate_line_price_history_graph(df_history : pd.DataFrame ,
     fig = px.line(df_history, x="date_open", y="price_open", title=f'{token_name} ({token_identifier})')
     return fig
 
-# endregion.
 
+def generate_kline_live_binance_graph(df_data : pd.DataFrame , title : str):
+    """
+        This is called upon interval component tick , and fed data from data.py
+    """
+    fig = go.Figure(data=[go.Candlestick(x=df_data['date_open'],
+                open=df_data['price_open'],
+                high=df_data['price_high'],
+                low=df_data['price_low'],
+                close=df_data['price_close'])])
+    fig.update_layout(title=title)
+
+    return fig
+
+# endregion.
 
 
 
