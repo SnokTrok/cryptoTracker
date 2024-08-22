@@ -48,3 +48,6 @@ create table exchange.price_history (
 ```
 
 I am aware that the devloper(s) working on OHLCscan are implementing and actively developing DEX endpoints as part of their api and I will be looking at this at a later date.
+
+
+from learning about websockets I would like to try to implement my own in the form of a realtime Unity multiplayer project, one to add to the list for sure!
