@@ -8,8 +8,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy import func
 
-Base = declarative_base()
-metadata = Base.metadata
+from cryptoTracker.orm.base import Base
 
 
 
@@ -17,7 +16,6 @@ metadata = Base.metadata
     Contains db models for ETH tables , built using a relational model for convenience.
 """
 
-# should be enough to get going ...
 
 class UserInfo(Base):
     __tablename__ = 'user_info'
