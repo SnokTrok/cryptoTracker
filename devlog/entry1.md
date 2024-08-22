@@ -53,5 +53,5 @@ Originally I was hoping to use the widely used etherscan api to get this, unfort
 After some research I cam across [this reddit thread](https://www.reddit.com/r/ethereum/comments/17h8f1d/i_built_a_free_full_historical_ohlc_crypto_price/) in which `/u/112129` talks about a free to use OHLC historical endpoint they have created...
 
 
-
+# Devlog
 [Entry 2](../devlog/entry2.md)
