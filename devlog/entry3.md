@@ -62,4 +62,4 @@ I achieved a simple implementation of this using dash's callback decorator to ou
 
 
 # Devlog
-- [`entry4`](devlog%20entry4.md)
+- [`entry4`](/devlog/entry4.md)

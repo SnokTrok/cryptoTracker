@@ -154,7 +154,7 @@ After calling the OHLC endpoint to get my data and upserting it into the db I ca
 
 
 # Devlog
-- [entry3](devlog%20entry3.md)
+- [entry3](/devlog/entry3.md)
 
 
 
