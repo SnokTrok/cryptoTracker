@@ -17,29 +17,22 @@ def init_callbacks(dash_app):
         get_current_token_id,
         set_current_token_id,
         get_current_exhange_token_id,
-        set_current_exchange_token_id
+        set_current_exchange_token_id,
+        on_binance_kline_message
     )
 
     @dash_app.callback(
             Output('static-price-history-candle-graph' ,'figure'),
             Output('static-price-history-line-graph' ,'figure'),
             Input('dd-token-select', 'value'),
-            Input("rs-interval-filter" , 'value')
-            #State()
+            Input("drp-interval-filter" , 'start_date'),
+            Input("drp-interval-filter" , 'end_date')
         )
-    def change_token(token_id , date_range):# , start_date , end_date):
+    def change_token(token_id , date_start , date_end):# , start_date , end_date):
 
         token_id = set_current_token_id(token_id)
 
         df_history = token_data[token_id]['price_history']
-
-        date_start = date_range[0] if date_range[0] < date_range[1] else date_range[1]
-        date_end = date_range[1] if date_range[0] < date_range[1] else date_range[0]
-
-        df_history = token_data[token_id]['price_history']
-
-        date_start = pd.to_datetime(df_history.date_open.min() + pd.Timedelta(days=date_start))
-        date_end = pd.to_datetime(df_history.date_open.min() + pd.Timedelta(days=date_end))
 
         print(f'{date_start} - {date_end}')
         date_mask = (
@@ -58,20 +51,22 @@ def init_callbacks(dash_app):
 
     @dash_app.callback(
             Output('live-binance-kline-graph','figure'),
-            Input('interval-binance-websocket-tick','n_intervals')
+            Input('ws-binance-live-dex','message')
     )
-    def update_kline_binance_exchange_layout(i : int):
+    def update_kline_binance_exchange_layout(message):
         """
             Contains elements for live information eg from binance websockets,
 
             since this data is streamed initialize as empty , run on interval tick.
         """
-        print(exchange_id_map)
-        print(exchange_data)
         exch = exchange_data[get_current_exhange_token_id()]
         data = exch['data']
+        if message == None:
+            print("no kline data to display...")
+            return generate_kline_live_binance_graph(df_data=data,title=f'{exch["name"]} live price')
+        on_binance_kline_message(message=message['data'])
+
         figure = generate_kline_live_binance_graph(df_data=data,title=f'{exch["name"]} live price')
-        print(f"Interval tick! {i}")
         return figure
 
 

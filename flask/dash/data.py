@@ -1,8 +1,9 @@
 
 import json
-import asyncio
-import threading
-import websocket
+import dateutil.tz
+from rich import print
+import pytz
+import dateutil
 import pandas as pd
 from pandera import check_input , check_output
 from cryptoTracker.application.queries.token import (
@@ -55,54 +56,22 @@ def load_price_history_data() ->  dict[int , dict]:
 
 
 def append_binance_live_exch(df : pd.DataFrame , id : int):
-    print(f"id={id} : {df}")
     global exchange_data
     if id not in exchange_data.keys():
         # isert new symbol into pg , generate id and append ...
         raise ValueError(f"{id} Does not exist within exchange data mapping , should it be added?")
     else : exchange_data[id]['data'] = pd.concat([exchange_data[id]['data'] , df])
 
+    exchange_data[id]['data'] = exchange_data[id]['data'].drop_duplicates(subset=['date_close'],keep='last')
+    exchange_data[id]['data'].reset_index()
 
 
-# region------------- WEBSOCKET ------------------
-
-def on_error(ws , err):
-    print(f"An exception occured in websocket thread! {err}")
-    raise
-
-async def open_websocket_thread():
-    print("Opening websocket listening thread...")
-    ws_thread = threading.Thread(target=open_binance_websockets)
-    ws_thread.start()
-    await asyncio.sleep(1)
-
-def on_websocket_start(ws):
-    #print("websocket started!")
-    pass
-
-def open_binance_websockets():
-    global websockets
-    global exchange_data
-    #websocket.enableTrace(True)
-    # currency websocket endpoints to subscribe to 
-    subscribed_symbols = ['WBTCUSDT', 'WBTCETH']
-
-    # kline_1m -> per min updated stream of data 
-    subscribed = "/".join([coin.lower() + '@kline_1m' for coin in subscribed_symbols])
-    socket = "wss://stream.binance.com:9443/stream?streams=" + subscribed
-    ws = websocket.WebSocketApp(socket, on_message=on_binance_kline_message , on_open=on_websocket_start)#, on_error=on_error)
-    print(f"Binance websockets listening for {subscribed_symbols}")
-    websockets.append(ws)
-    ws.run_forever()
-
-
-def on_binance_kline_message(ws,message)-> pd.DataFrame:
+def on_binance_kline_message(message)-> pd.DataFrame:
     data = json.loads(message)['data']
-    
     # check kline closed
-    if data['k']['x'] == False:
-        print("Candle not closed , skipping...")
-        return None
+    # if data['k']['x'] == False:
+    #     print("Candle not closed , skipping...")
+    #     return None
     
     df = pd.DataFrame.from_records([data['k']])
     df=df.rename({
@@ -129,7 +98,11 @@ def on_binance_kline_message(ws,message)-> pd.DataFrame:
     parse_epoch  = ['date_open' , 'date_close']
 
     for col in parse_epoch:
-        df[col] = df[col].apply(lambda x : pd.to_datetime(x,unit='s').replace(tzinfo=None))
+        df[col] = (
+            df[col].apply(lambda x : pd.to_datetime(x,unit='ms')
+                .tz_localize(pytz.utc)
+                .astimezone(tz=dateutil.tz.gettz('Europe/London')))
+        )
 
     append_binance_live_exch(df=df , id=exchange_id_map[data['s']])
 
@@ -154,7 +127,7 @@ def set_current_exchange_token_id(id : int):
     exchange_token_id = id
     return exchange_token_id
 
-# endregion.
+# endregion. ---------------------------
 
 # init here
 
