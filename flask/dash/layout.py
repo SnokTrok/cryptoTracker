@@ -2,6 +2,7 @@ from typing import Tuple
 import asyncio
 from datetime import datetime
 from dash import dcc, html
+from dash_extensions import WebSocket
 import pandas as pd
 
 from cryptoTracker.flask.dash.figures.utils import (
@@ -11,7 +12,8 @@ from cryptoTracker.flask.dash.figures.utils import (
 )
 from cryptoTracker.application.utils import empty_dataframe_like
 from cryptoTracker.flask.dash.schemas.data import binance_kline_message_schema
-from cryptoTracker.flask.dash.data import token_data , get_current_token_id , open_websocket_thread
+from cryptoTracker.flask.dash.data import token_data , get_current_token_id , on_binance_kline_message
+
 
 starting_token_id = get_current_token_id()
 starting_data_filter = (datetime(2024,7,1),datetime(2024,8,1))
@@ -113,7 +115,6 @@ def load_dashboard_layout() -> html.Div:
                                children=[
                                    load_token_dropdown(),
                                    build_graph_layout(),
-                                   dcc.Interval(id='interval-binance-websocket-tick',interval=1500), # 1.5 second tick rate
                                    build_live_exchange_layout()
                                ]
     )
@@ -135,9 +136,19 @@ def build_live_exchange_layout() -> html.Div:
         id='live-binance-kline-graph',
         style={'display' : 'inline-block'}
     )
-    asyncio.run(open_websocket_thread())
+
+    # websocket connection...
+    subscribed_symbols = ['WBTCUSDT']#, 'WBTCETH']
+
+    # kline_1m -> per min updated stream of data 
+    subscribed = "/".join([coin.lower() + '@kline_1m' for coin in subscribed_symbols])
+    socket = "wss://stream.binance.com:9443/stream?streams=" + subscribed
+
+    print(f"Listening to Binance kline_1m websockets for  : {subscribed_symbols} ...")
+
     return html.Div(children=[
-            graph
+            graph,
+            WebSocket(url=socket,id='ws-binance-live-dex')
         ],
         id='div-live-binance',
     ) # can use this tag to toggle visibility
