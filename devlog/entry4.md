@@ -117,7 +117,6 @@ async def open_binance_websockets():
 after some time working with this I decided it would be good practice to try the asyncio approach as this is a programming paradigm in webapplications that can handle many more concurrent user requests simultaneously, I also was not looking forward to te increasing complexity this project is bound to face whilst managing multi threading with my lack of exposure to such methodologies.
 
 
-
 I began by first trying to setup the asyncio event loop with my existing code, though quickly found myself faces with issues revelving around integrating the event loop with the defaultly syncronous loop Flask uses , and by extension Dash , after looking online for solutions I found [dash-extensions](https://www.dash-extensions.com/components/websocket) package that includes handling websocket connections via a custom component which allows me to stream the recv() from the bininace websocket through to a dash callback funciton , negating my previously expected need to use the Interval component to regularly look for updated live data.
 
 After a short while I managed to implement a working live stream that didnt interrupt my main thread!
@@ -125,6 +124,62 @@ After a short while I managed to implement a working live stream that didnt inte
 Before moving onto playing about with LSTM training, there were a few quality of life changes I wanted to make t my project:
 - the RangeSlider feature could do with some TLC since it is hard to pick exact dates and it seems the interval shifting is off in code somewhere for this I want to move over to the [DatePickerRange](https://dash.plotly.com/dash-core-components/datepickerrange) dash component
 - Storing the streamed websocket data to my local db for future use to complete the live cycle
-- 
 
 
+solving the first issue is relatively straighforward , just changing out our layout.py and callbacks.py to accomodate the new component format : 
+```python
+#------------- FROM layout.py------------------------------
+
+def load_dt_slider( date_min  : datetime, date_max : datetime) -> dcc.DatePickerRange:
+    """
+        Constructs a slider using EPOCH integer ranges , but display as datetime conversions?
+    """
+    # remove time from datetime components
+    date_min = date_min.date()
+    date_max = date_max.date()
+
+    start_date =starting_data_filter[0].date()
+    end_date = starting_data_filter[1].date()
+
+    return dcc.DatePickerRange(
+        min_date_allowed=date_min,
+        max_date_allowed=date_max,
+        initial_visible_month=start_date,
+        start_date=start_date,
+        end_date=end_date,
+        id='drp-interval-filter'
+    )
+
+#--------- AND FROM callbacks.py-------------------------------
+
+	    @dash_app.callback(
+            Output('static-price-history-candle-graph' ,'figure'),
+            Output('static-price-history-line-graph' ,'figure'),
+            Input('dd-token-select', 'value'),
+            Input("drp-interval-filter" , 'start_date'),
+            Input("drp-interval-filter" , 'end_date')
+        )
+    def change_token(token_id , date_start , date_end):# , start_date , end_date):
+
+        token_id = set_current_token_id(token_id)
+
+        df_history = token_data[token_id]['price_history']
+
+        print(f'{date_start} - {date_end}')
+        date_mask = (
+            df_history.date_open.ge(date_start) & df_history.date_close.le(date_end)
+        )
+        df_filtered = df_history.loc[date_mask]
+
+        # build graphs
+        candle_fig = generate_candlestick_price_history_graph(df_history=df_filtered,token_name=token_data[token_id]['token_name'],token_identifier='')
+        line_fig = generate_line_price_history_graph(df_history=df_filtered,token_name=token_data[token_id]['token_name'],token_identifier='')
+        return candle_fig , line_fig
+```
+
+whilst this is still not very good in terms of UX , it will do for now , long term though following an actual design page for styling would be ideal.
+
+
+
+# DEVLOG : 
+- [entry5](/devlog/entry5.md)

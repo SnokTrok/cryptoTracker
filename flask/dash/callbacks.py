@@ -25,21 +25,14 @@ def init_callbacks(dash_app):
             Output('static-price-history-candle-graph' ,'figure'),
             Output('static-price-history-line-graph' ,'figure'),
             Input('dd-token-select', 'value'),
-            Input("rs-interval-filter" , 'value')
+            Input("drp-interval-filter" , 'start_date'),
+            Input("drp-interval-filter" , 'end_date')
         )
-    def change_token(token_id , date_range):# , start_date , end_date):
+    def change_token(token_id , date_start , date_end):# , start_date , end_date):
 
         token_id = set_current_token_id(token_id)
 
         df_history = token_data[token_id]['price_history']
-
-        date_start = date_range[0] if date_range[0] < date_range[1] else date_range[1]
-        date_end = date_range[1] if date_range[0] < date_range[1] else date_range[0]
-
-        df_history = token_data[token_id]['price_history']
-
-        date_start = pd.to_datetime(df_history.date_open.min() + pd.Timedelta(days=date_start))
-        date_end = pd.to_datetime(df_history.date_open.min() + pd.Timedelta(days=date_end))
 
         print(f'{date_start} - {date_end}')
         date_mask = (

@@ -1,6 +1,6 @@
 from typing import Tuple
 import asyncio
-from datetime import datetime
+from datetime import datetime , date
 from dash import dcc, html
 from dash_extensions import WebSocket
 import pandas as pd
@@ -19,7 +19,7 @@ starting_token_id = get_current_token_id()
 starting_data_filter = (datetime(2024,7,1),datetime(2024,8,1))
 
 
-def load_dt_slider( date_min  : datetime, date_max : datetime) -> dcc.RangeSlider:
+def load_dt_slider( date_min  : datetime, date_max : datetime) -> dcc.DatePickerRange:
     """
         Constructs a slider using EPOCH integer ranges , but display as datetime conversions?
     """
@@ -29,28 +29,16 @@ def load_dt_slider( date_min  : datetime, date_max : datetime) -> dcc.RangeSlide
 
     start_date =starting_data_filter[0].date()
     end_date = starting_data_filter[1].date()
-    # generate a series of days between min-max inclusive
 
-    time_series = pd.date_range(date_min , date_max , freq='1d', inclusive='both')
-    num_days = len(time_series)
-
-    start_val = end_val = 0
-    for i , dt in enumerate(time_series):
-        if dt.date() == start_date:
-            start_val = i
-        if dt.date() == end_date:
-            end_val = i 
-            break
-
-    return dcc.RangeSlider(
-        min=1, max=num_days,
-        id="rs-interval-filter",
-        value=[start_val,end_val],
-        marks={i:str(dt.date()) for i , dt in enumerate(time_series) if dt.month % 3 == 0 and dt.day == 1},
-        allowCross=False,
-        updatemode='drag'
+    return dcc.DatePickerRange(
+        min_date_allowed=date_min,
+        max_date_allowed=date_max,
+        initial_visible_month=start_date,
+        start_date=start_date,
+        end_date=end_date,
+        id='drp-interval-filter'
     )
-
+    
 
 def load_static_price_history_graphs(df_history, token_info) -> html.Div:
     
