@@ -77,7 +77,6 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-cryptoTracker/noteboks/private
 
 # IPython
 profile_default/
