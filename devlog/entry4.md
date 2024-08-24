@@ -182,4 +182,4 @@ whilst this is still not very good in terms of UX , it will do for now , long te
 
 
 # DEVLOG : 
-- [entry5](/devlog/entry5.md)
+- [entry5](/devlog/entry5.md)   
