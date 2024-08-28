@@ -161,3 +161,7 @@ cython_debug/
 
 # for local hosting keys etc...
 private/
+
+
+# ML models that could be large in size...
+application/ML/models/
